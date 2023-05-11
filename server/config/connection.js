@@ -1,5 +1,27 @@
-const mongoose = require('mongoose');
+const { ApolloServer } = require('apollo-server-express');
+const express = require('express');
+const { typeDefs, resolvers } = require('../controllers/user-controller');
+const { authMiddleware } = require('../utils/auth');
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/googlebooks');
+const app = express();
+const PORT = process.env.PORT || 3001;
 
-module.exports = mongoose.connection;
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: authMiddleware,
+});
+
+server.applyMiddleware({ app });
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static('client/build'));
+}
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}!`);
+  console.log(`Use GraphQL at http://localhost:${PORT}${server.graphqlPath}`);
+});
