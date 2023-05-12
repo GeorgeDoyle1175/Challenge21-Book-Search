@@ -1,57 +1,103 @@
-// route to get logged in user's info (needs the token)
-export const getMe = (token) => {
-  return fetch('/api/users/me', {
-    headers: {
-      'Content-Type': 'application/json',
-      authorization: `Bearer ${token}`,
-    },
-  });
+const API = {
+  async loginUser(username, password) {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message);
+    }
+
+    const userData = await response.json();
+    return userData;
+  },
+
+  async signupUser(username, password, email) {
+    const response = await fetch('/api/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password, email }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message);
+    }
+
+    const userData = await response.json();
+    return userData;
+  },
+
+  async searchBooks(searchTerm) {
+    const response = await fetch(`/api/books/search?q=${searchTerm}`);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message);
+    }
+
+    const bookData = await response.json();
+    return bookData;
+  },
+
+  async saveBook(bookData, token) {
+    const response = await fetch('/api/books', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(bookData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message);
+    }
+
+    const savedBookData = await response.json();
+    return savedBookData;
+  },
+
+  async getSavedBooks(token) {
+    const response = await fetch('/api/books', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message);
+    }
+
+    const savedBookData = await response.json();
+    return savedBookData;
+  },
+
+  async deleteSavedBook(bookId, token) {
+    const response = await fetch(`/api/books/${bookId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message);
+    }
+
+    const deleteData = await response.json();
+    return deleteData;
+  },
 };
 
-export const createUser = (userData) => {
-  return fetch('/api/users', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData),
-  });
-};
-
-export const loginUser = (userData) => {
-  return fetch('/api/users/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData),
-  });
-};
-
-// save book data for a logged in user
-export const saveBook = (bookData, token) => {
-  return fetch('/api/users', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(bookData),
-  });
-};
-
-// remove saved book data for a logged in user
-export const deleteBook = (bookId, token) => {
-  return fetch(`/api/users/books/${bookId}`, {
-    method: 'DELETE',
-    headers: {
-      authorization: `Bearer ${token}`,
-    },
-  });
-};
-
-// make a search to google books api
-// https://www.googleapis.com/books/v1/volumes?q=harry+potter
-export const searchGoogleBooks = (query) => {
-  return fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}`);
-};
+export default API;
